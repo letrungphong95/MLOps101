@@ -1,0 +1,4 @@
+avro
+pandas
+pyarrow
+kafka-python
