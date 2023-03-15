@@ -23,6 +23,7 @@ Start notebook
 
 ## 2. List of Blogs 
 
-+ [SAI #01: Column Based vs. Row Based Storage, Kafka - Writing Data](https://www.newsletter.swirlai.com/p/sai-01-column-based-vs-row-based): 
++ [SAI #01: Column Based vs. Row Based Storage, Kafka - Writing Data](https://www.newsletter.swirlai.com/p/sai-01-column-based-vs-row-based): -> [Source](https://github.com/letrungphong95/MLOps101/tree/main/sai01)
++ [SAI #02: Feature Store, Splittable vs. Non-Splittable Files and more...](https://www.newsletter.swirlai.com/p/sai-02-feature-store-splittable-vs): -> [Source](https://github.com/letrungphong95/MLOps101/tree/main/sai02)
 
 
