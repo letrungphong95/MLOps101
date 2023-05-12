@@ -1,0 +1,79 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    container_name: demo-zookeeper
+    ports:
+      - "22181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: demo-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: demo-kafdrop
+    restart: "no"
+    ports:
+      - "9007:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:29092"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+    depends_on:
+      - kafka
+
+  mysql:
+    image: mysql:8
+    container_name: demo-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_DATABASE: 'inventory'
+      MYSQL_USER: 'admin'
+      MYSQL_PASSWORD: 'admin'
+    volumes:
+      - ./script/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - '3306:3306'
+
+  debezium:
+    image: debezium/connect:1.6
+    container_name: demo-debezium
+    environment:
+      BOOTSTRAP_SERVERS: 'kafka:29092'
+      GROUP_ID: '1'
+      CONFIG_STORAGE_TOPIC: 'debezium_configs'
+      OFFSET_STORAGE_TOPIC: 'debezium_offsets'
+      STATUS_STORAGE_TOPIC: 'debezium_statuses'
+      CONFIG_STORAGE_REPLICATION_FACTOR: '1'
+      OFFSET_STORAGE_REPLICATION_FACTOR: '1'
+      STATUS_STORAGE_REPLICATION_FACTOR: '1'
+      OFFSET_FLUSH_INTERVAL_MS: '10000'
+      OFFSET_FLUSH_TIMEOUT_MS: '5000'
+      REST_ADVERTISED_HOST_NAME: 'debezium'
+      REST_PORT: '8083'
+    depends_on:
+      - kafka
+      - mysql
+    ports:
+      - '8083:8083'
+    # volumes:
+    #   - ./debezium-config:/kafka/config
