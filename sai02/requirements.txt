@@ -1,0 +1,5 @@
+feast-studio
+feast
+joblib
+scikit-learn
+kafka
